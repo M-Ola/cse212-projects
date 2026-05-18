@@ -11,8 +11,7 @@
     /// <param name="priority">The priority</param>
     public void Enqueue(string value, int priority)
     {
-        var newNode = new PriorityItem(value, priority);
-        _queue.Add(newNode);
+       _queue.Add(new PriorityItem(value, priority));
     }
 
     public string Dequeue()
@@ -23,17 +22,24 @@
         }
 
         // Find the index of the item with the highest priority to remove
-        var highPriorityIndex = 0;
-        for (int index = 1; index < _queue.Count - 1; index++)
+        int highPriorityIndex = 0;
+        for (int index = 1; index < _queue.Count; index++)
         {
-            if (_queue[index].Priority >= _queue[highPriorityIndex].Priority)
+            // Correct comparison: > ensures FIFO for ties
+            if (_queue[index].Priority > _queue[highPriorityIndex].Priority)
+            {
                 highPriorityIndex = index;
+            }
         }
 
-        // Remove and return the item with the highest priority
-        var value = _queue[highPriorityIndex].Value;
+       // Remove and return the item with the highest priority
+        string value = _queue[highPriorityIndex].Value;
+        _queue.RemoveAt(highPriorityIndex);
         return value;
     }
+   
+   
+    
 
     // DO NOT MODIFY THE CODE IN THIS METHOD
     // The graders rely on this method to check if you fixed all the bugs, so changes to it will cause you to lose points.
@@ -41,7 +47,12 @@
     {
         return $"[{string.Join(", ", _queue)}]";
     }
+
 }
+
+
+
+
 
 internal class PriorityItem
 {

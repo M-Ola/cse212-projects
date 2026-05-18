@@ -11,7 +11,10 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3) and
     // run until the queue is empty
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: GetNextPerson() only re‑adds people when Turns > 1, 
+    // causing people with exactly 1 turn to return with the wrong turn count and then be removed too early.
+    //Also turn decrement happens after returning the person, so the returned object shows the wrong number of turns.
+    //Queue rotation ends too early because people are removed before their turn count is properly decremented.
     public void TestTakingTurnsQueue_FiniteRepetition()
     {
         var bob = new Person("Bob", 2);
@@ -43,7 +46,9 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3)
     // After running 5 times, add George with 3 turns.  Run until the queue is empty.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, George, Sue, Tim, George, Tim, George
-    // Defect(s) Found: 
+    // Defect(s) Found: Incorrect turn decrement timing and incorrect removal of 1‑turn players.
+    // Queue rotation becomes invalid because players are not re‑added correctly based on remaining turns.
+    
     public void TestTakingTurnsQueue_AddPlayerMidway()
     {
         var bob = new Person("Bob", 2);
@@ -85,7 +90,9 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: Infinite‑turn players (Turns <= 0) are not re‑added because the code only re‑adds when Turns > 1.
+    //Returned person shows incorrect turn count due to decrement happening after return.
+    // Queue rotation breaks because Tim (0 turns) is removed when he should remain forever.
     public void TestTakingTurnsQueue_ForeverZero()
     {
         var timTurns = 0;
@@ -116,7 +123,12 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Tim, Sue, Tim, Sue, Tim, Sue, Tim, Tim, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: Negative turns (infinite) are not treated as infinite; Tim is removed incorrectly.
+    //Infinite‑turn players incorrectly have their turn count changed.
+    // Returned person shows incorrect turn count.
+    //Queue rotation fails because Tim is not consistently re‑added.
+
+
     public void TestTakingTurnsQueue_ForeverNegative()
     {
         var timTurns = -3;
@@ -143,7 +155,7 @@ public class TakingTurnsQueueTests
     [TestMethod]
     // Scenario: Try to get the next person from an empty queue
     // Expected Result: Exception should be thrown with appropriate error message.
-    // Defect(s) Found: 
+    // Defect(s) Found:  No defects. Empty‑queue exception handling is correct.
     public void TestTakingTurnsQueue_Empty()
     {
         var players = new TakingTurnsQueue();
